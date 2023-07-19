@@ -4,8 +4,8 @@ from nltk.tokenize import word_tokenize
 import qg as qg
 
 # Sample natural language query
-query = "How many tunnels are there?"
-
+query = "list all alarms which has status is active"
+query=query.lower()
 tokens = nltk.word_tokenize(query)
 tagged=nltk.pos_tag(tokens)
 keywords=[]

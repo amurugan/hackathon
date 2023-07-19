@@ -4,23 +4,42 @@ relationList={
 	#key		value
 	'tunnel':	'tunnel',
 	'tunnels':	'tunnel',
+	'alarm' : 'appliancealarm',
+	'alarms' : 'appliancealarm'
 }
 
 attributeList={
+	#Table=Tunnel
 	#key			value
+	'id' : ['tunnel.id'],
 	'name':			['tunnel.name',],
-	'tunnelname':	['tunnel.name'],
-	'status':		['tunnel.status'],
+	'tunnel name':	['tunnel.name'],
 	'mode': ['tunnel.mode'],
+	#Table=Alarm
+	#key			value
+	'id':			['alarm.ID'],
+	'status':		['alarm.CLOSED'],
 }
 
 tableAttributeList={
 	#attribute		relation
 	'tunnel.name': 'tunnel',
 	'tunnel.status' : 'tunnel',
-	'tunnel.mode' : 'tunnel'
+	'tunnel.mode' : 'tunnel',
+	'alarm.id':	'alarm',
+	'alarm.text':	'alarm',
+	'alarm.status':	'alarm',
 }
 
+aggregateFunction = {
+	'many' : 'count',
+	'count' : 'count'
+}
+
+primaryKey = {
+	'tunnel' : 'tunnel.id',
+	'alarm' : 'alarm.id'
+}
 
 def queryGenerator(tagged,keywords,numerals,query):
 	table = []
@@ -54,9 +73,9 @@ def queryGenerator(tagged,keywords,numerals,query):
 	#join condition if >1 tables
 	joinCond = ''
 	
-	#if(len(table)>1):
-	#	joinCond = 'department.dId=student.dId '
-	#
+	if(len(table)>1):
+		joinCond = primaryKey[table[0]]+'='+primaryKey[table[1]]
+	
 	boolean = ['or','and']
 	booleanDict = {}
 	
@@ -101,7 +120,7 @@ def queryGenerator(tagged,keywords,numerals,query):
 	print('Numeral conditions')
 	print(numCond)
 	
-	stopw = ['need','i','fetch','give','all','find','display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
+	stopw = ['need','i', 'many', 'fetch','give','all','find','display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
 	stopw.remove('up')
 	stopw.remove('down')
 	#condition list for non numeric attributes
@@ -160,6 +179,10 @@ def queryGenerator(tagged,keywords,numerals,query):
 	for word in selectAll:
 		if word in query:	
 			attribute = ['*']
+
+	for word in aggregateFunction:
+		if word in query:	
+			attribute = [aggregateFunction[word] + '(*)']
 	
 	execQuery='SELECT '
 	
