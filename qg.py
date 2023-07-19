@@ -2,23 +2,22 @@ from nltk.corpus import stopwords
 
 relationList={
 	#key		value
-	'tunnel':	'tunnel',
-	'tunnels':	'tunnel',
 	'alarm' : 'appliancealarm',
-	'alarms' : 'appliancealarm'
+	'alarms' : 'appliancealarm',
+	'log' : 'actionlog',
+	'appliance' : 'neconfig2'
 }
 
 attributeList={
-	#Table=Tunnel
-	#key			value
-	'id' : ['tunnel.id'],
-	'name':			['tunnel.name',],
-	'tunnel name':	['tunnel.name'],
-	'mode': ['tunnel.mode'],
 	#Table=Alarm
 	#key			value
 	'id':			['alarm.ID'],
-	'status':		['alarm.CLOSED'],
+	'type':		['alarm.TYPE'],
+	#Table=logs
+	'id':			['actionlog.ID'],
+    'tasks' : ['actionlog.name'],
+	#neconfig
+	'status' : ['neconfig2.config_data']
 }
 
 tableAttributeList={
@@ -26,9 +25,11 @@ tableAttributeList={
 	'tunnel.name': 'tunnel',
 	'tunnel.status' : 'tunnel',
 	'tunnel.mode' : 'tunnel',
-	'alarm.id':	'alarm',
-	'alarm.text':	'alarm',
-	'alarm.status':	'alarm',
+	'alarm.ID':	'appliancealarm',
+	'alarm.TYPE':	'appliancealarm',
+	'actionlog.ID' : 'actionlog',
+	'actionlog.name' : 'actionlog',
+	"neconfig2.config_data" : 'neconfig2'
 }
 
 aggregateFunction = {
@@ -39,6 +40,14 @@ aggregateFunction = {
 primaryKey = {
 	'tunnel' : 'tunnel.id',
 	'alarm' : 'alarm.id'
+}
+
+alaramTypes = {
+	"tunnel" : 'TUN' 
+}
+
+alaramTypes = {
+	"tunnel" : 'TUN' 
 }
 
 def queryGenerator(tagged,keywords,numerals,query):
@@ -56,9 +65,9 @@ def queryGenerator(tagged,keywords,numerals,query):
 		elif word[0] not in numerals:
 			special.append(word[0])
 	for attr in attribute:
-		table.append(tableAttributeList[attr])
+		if tableAttributeList[attr] not in table:
+			table.append(tableAttributeList[attr])
 	table = list(set(table))
-	
 	#if no attribute is found, all attibutes to be selected	
 	if(len(attribute)==0):
 		attribute.append('*')
@@ -73,8 +82,8 @@ def queryGenerator(tagged,keywords,numerals,query):
 	#join condition if >1 tables
 	joinCond = ''
 	
-	if(len(table)>1):
-		joinCond = primaryKey[table[0]]+'='+primaryKey[table[1]]
+	#if(len(table)>1):
+	#	joinCond = primaryKey[table[0]]+'='+primaryKey[table[1]]
 	
 	boolean = ['or','and']
 	booleanDict = {}
@@ -120,7 +129,7 @@ def queryGenerator(tagged,keywords,numerals,query):
 	print('Numeral conditions')
 	print(numCond)
 	
-	stopw = ['need','i', 'many', 'fetch','give','all','find','display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
+	stopw = ['need','i', 'many', 'fetch','give','all','find','related', 'display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
 	stopw.remove('up')
 	stopw.remove('down')
 	#condition list for non numeric attributes
@@ -160,10 +169,16 @@ def queryGenerator(tagged,keywords,numerals,query):
 			whereClause.append(temp)
 			
 		else:
-			temp = condList[item][0]+'="'+item+'"'
+			if condList[item][0] == 'alarm.TYPE' :
+				temp = condList[item][0]+'="'+alaramTypes[item]+'"'
+			else:
+				temp = condList[item][0]+'="'+item+'"'
 			if item in booleanDict:
 				temp = temp + ' ' + booleanDict[item]
-			whereClause.append(condList[item][0]+'="'+item+'"')
+			if condList[item][0] == 'alarm.TYPE' :
+				whereClause.append(condList[item][0]+'="'+alaramTypes[item]+'"')
+			else:
+				whereClause.append(condList[item][0]+' like "%'+item+'%"')
 			
 	try :
 		if 'and' in query:
@@ -175,7 +190,7 @@ def queryGenerator(tagged,keywords,numerals,query):
 	print('Where Clause List ')
 	print(whereClause)
 	
-	selectAll = ['details','records','record','detail']
+	selectAll = ['all', 'details','records','record','detail']
 	for word in selectAll:
 		if word in query:	
 			attribute = ['*']
@@ -208,6 +223,8 @@ def queryGenerator(tagged,keywords,numerals,query):
 		execQuery+=joinCond + ' and '
 	execQuery+= operation.join(numCond) 
 
+	if 'neconfig2' in table:
+		execQuery+= ' and ' + " resource_base like '%systemInfo%'"
 	execQuery+=';'
 	print('Final Query')
 	return execQuery
