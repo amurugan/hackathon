@@ -11,8 +11,8 @@ relationList={
 attributeList={
 	#Table=Alarm
 	#key			value
-	'id':			['alarm.ID'],
-	'type':		['alarm.TYPE'],
+	'id':			['appliancealarm.id'],
+	'type':		['appliancealarm.type'],
 	#Table=logs
 	'id':			['actionlog.ID'],
     'tasks' : ['actionlog.name'],
@@ -22,11 +22,8 @@ attributeList={
 
 tableAttributeList={
 	#attribute		relation
-	'tunnel.name': 'tunnel',
-	'tunnel.status' : 'tunnel',
-	'tunnel.mode' : 'tunnel',
-	'alarm.ID':	'appliancealarm',
-	'alarm.TYPE':	'appliancealarm',
+	'appliancealarm.id':	'appliancealarm',
+	'appliancealarm.type':	'appliancealarm',
 	'actionlog.ID' : 'actionlog',
 	'actionlog.name' : 'actionlog',
 	"neconfig2.config_data" : 'neconfig2'
@@ -46,9 +43,6 @@ alaramTypes = {
 	"tunnel" : 'TUN' 
 }
 
-alaramTypes = {
-	"tunnel" : 'TUN' 
-}
 
 def queryGenerator(tagged,keywords,numerals,query):
 	table = []
@@ -74,9 +68,9 @@ def queryGenerator(tagged,keywords,numerals,query):
 	else:
 		attribute = list(set(attribute))
 		
-	print(table)
-	print(attribute)
-	print(special)
+	#print(table)
+	#print(attribute)
+	#print(special)
 	
 	
 	#join condition if >1 tables
@@ -114,10 +108,10 @@ def queryGenerator(tagged,keywords,numerals,query):
 					identified=True
 			if identified==True:
 				break		
-	print('relational operation for each numeral')
-	print(numOp)
-	print('num attribute list')
-	print(numAttrList)
+	#print('relational operation for each numeral')
+	#print(numOp)
+	#print('num attribute list')
+	#print(numAttrList)
 	
 	#mysql code for numerical condition
 	numCond=[]
@@ -126,10 +120,10 @@ def queryGenerator(tagged,keywords,numerals,query):
 		if item in booleanDict:
 			temp = temp + ' ' + booleanDict[item]
 		numCond.append(temp)
-	print('Numeral conditions')
-	print(numCond)
+	#print('Numeral conditions')
+	#print(numCond)
 	
-	stopw = ['need','i', 'many', 'fetch','give','all','find','related', 'display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
+	stopw = ['need','i', 'many','with', 'fetch','give','all','find','related', 'display','greater','less','more','than','list', 'show','select', 'out', 'number','select',',','get','retrieve','print','tell','having','whose','details'] + stopwords.words('english')
 	stopw.remove('up')
 	stopw.remove('down')
 	#condition list for non numeric attributes
@@ -150,8 +144,8 @@ def queryGenerator(tagged,keywords,numerals,query):
 						if item not in condList:
 							condList[item] = attributeList[query[itemIndex+i]]
 	
-	print('Condition list')
-	print(condList)
+	#print('Condition list')
+	#print(condList)
 	
 	#where clause involving 'and' and 'or' with numeral and string attributes
 	whereClause = []
@@ -169,13 +163,13 @@ def queryGenerator(tagged,keywords,numerals,query):
 			whereClause.append(temp)
 			
 		else:
-			if condList[item][0] == 'alarm.TYPE' :
+			if condList[item][0] == 'appliancealarm.type' :
 				temp = condList[item][0]+'="'+alaramTypes[item]+'"'
 			else:
 				temp = condList[item][0]+'="'+item+'"'
 			if item in booleanDict:
 				temp = temp + ' ' + booleanDict[item]
-			if condList[item][0] == 'alarm.TYPE' :
+			if condList[item][0] == 'appliancealarm.type' :
 				whereClause.append(condList[item][0]+'="'+alaramTypes[item]+'"')
 			else:
 				whereClause.append(condList[item][0]+' like "%'+item+'%"')
@@ -187,13 +181,18 @@ def queryGenerator(tagged,keywords,numerals,query):
 			operation = ' or '
 	except ValueError :
 		operation = ''
-	print('Where Clause List ')
-	print(whereClause)
+	#print('Where Clause List ')
+	#print(whereClause)
 	
 	selectAll = ['all', 'details','records','record','detail']
 	for word in selectAll:
-		if word in query:	
-			attribute = ['*']
+		if word in query:
+			if 'appliancealarm' in table:
+				attribute = ['DESCRIPTION']
+			elif 'neconfig2' in table:
+				attribute = ["json_extract(config_data, '$.hostName') as hostname"]
+			else:
+				attribute = ['*']
 
 	for word in aggregateFunction:
 		if word in query:	
@@ -226,5 +225,6 @@ def queryGenerator(tagged,keywords,numerals,query):
 	if 'neconfig2' in table:
 		execQuery+= ' and ' + " resource_base like '%systemInfo%'"
 	execQuery+=';'
-	print('Final Query')
+	#print('Final Query')
+	#print(execQuery)
 	return execQuery
