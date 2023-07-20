@@ -8,8 +8,8 @@ importlib-resources==3.3.1
 iniparse==0.4
 iotop==0.6
 joblib==0.14.1
-mysql-connector-python==8.0.33
-nltk==3.5
+mysql-connector-python==8.0.5
+nltk==3.4.5
 pathlib2==2.3.7.post1
 perf==0.1
 protobuf==3.17.3

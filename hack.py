@@ -17,8 +17,8 @@ def process(query):
 			elif i[1] == 'CD':
 				numerals.append(i[0])
 	sqlQuery = qg.queryGenerator(tagged,keywords,numerals,tokens)
-	print "=======Answer for your question======",
-	print "\n",
+	print ("=======Answer for your question======")
+	print ("\n")
 	mydb = mysql.connector.connect(
 		host="localhost",
 		user="root",
