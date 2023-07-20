@@ -3,6 +3,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import qg as qg
 import mysql.connector
+from flask import Flask, render_template, request, redirect, session
+app = Flask(__name__)
+
 
 def process(query):
 	query=query.lower()
@@ -29,17 +32,22 @@ def process(query):
 	mycursor = mydb.cursor()
 	mycursor.execute(sqlQuery)
 	myresult = mycursor.fetchall()
+	return myresult
 	for x in myresult:
 		for col in x:
 			print(col)
 			print(' ')
 	print ('\n')
-while True:
-	#1) count all active alarms
-	#2) list all active alarms
-	#3) list all alarms with type tunnel
-	#4) count all logs related to orchestration tasks
-	#5) count all the appliance with status normal
-	#6) list all the appliance with status normal
-	query = raw_input("Please enter your question: ")
-	process(query)
+
+@app.route('/generatedata', methods=['POST'])
+def handle_post():
+    if request.method == 'POST':
+        query = request.form['query']
+        return process(query)
+
+@app.route('/test')
+def handle_get():
+    return "test"
+
+if __name__ == '__main__':
+    app.run(debug=False,host='0.0.0.0', port=5858)
