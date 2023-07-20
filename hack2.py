@@ -20,8 +20,8 @@ def process(query):
 			elif i[1] == 'CD':
 				numerals.append(i[0])
 	sqlQuery = qg.queryGenerator(tagged,keywords,numerals,tokens)
-	print "=======Answer for your question======",
-	print "\n",
+	print ("=======Answer for your question======")
+	print ("\n")
 	mydb = mysql.connector.connect(
 		host="localhost",
 		user="root",
@@ -33,11 +33,6 @@ def process(query):
 	mycursor.execute(sqlQuery)
 	myresult = mycursor.fetchall()
 	return myresult
-	for x in myresult:
-		for col in x:
-			print(col)
-			print(' ')
-	print ('\n')
 
 @app.route('/generatedata', methods=['POST'])
 def handle_post():
@@ -48,6 +43,12 @@ def handle_post():
 @app.route('/test')
 def handle_get():
     return "test"
+
+@app.route('/nlp_query', methods=['POST'])
+def handel_nlp_query():
+    if request.method == 'POST':
+        query = request.form['query']
+        return process(query)
 
 if __name__ == '__main__':
     app.run(debug=False,host='0.0.0.0', port=5858)
