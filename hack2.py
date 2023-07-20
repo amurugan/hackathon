@@ -18,8 +18,12 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import qg as qg
 import mysql.connector
+from OpenSSL import SSL
 from flask import Flask, render_template, request, redirect, session
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 def process(query):
@@ -41,7 +45,7 @@ def process(query):
 		host="localhost",
 		user="root",
 		password="root",
-		database="vistapoint",
+		database="vistapoint_99_99_99", #vistapoint
 		port="1026"
 	)
 	mycursor = mydb.cursor()
@@ -50,20 +54,23 @@ def process(query):
 	return myresult
 
 @app.route('/generatedata', methods=['POST'])
+@cross_origin()
 def handle_post():
     if request.method == 'POST':
         query = request.form['query']
         return process(query)
 
 @app.route('/test')
+@cross_origin()
 def handle_get():
     return "test"
 
 @app.route('/nlp_query', methods=['POST'])
+@cross_origin()
 def handel_nlp_query():
     if request.method == 'POST':
         query = request.form['query']
         return process(query)
 
 if __name__ == '__main__':
-    app.run(debug=False,host='0.0.0.0', port=5858)
+    app.run(debug=False,host='0.0.0.0', port=5858, ssl_context='adhoc')
